@@ -5,13 +5,52 @@ from fastapi import UploadFile, File
 from pydantic import BaseModel
 import subprocess
 import time
+import os
+import shutil
 
 
 app = FastAPI()
 
-BASE = Path(r"D:\EmulatorLite")
 
-ADB = r"D:\androisemulatsetupsmallphoner\platform-tools\adb.exe"
+# ============================================================
+# PLATFORM / PATH CONFIGURATION
+# ============================================================
+
+# Project folder
+BASE = Path(__file__).resolve().parent
+
+
+# Find ADB automatically.
+#
+# LOCAL WINDOWS:
+# Uses your Android SDK ADB.
+#
+# RENDER / LINUX:
+# ADB will normally not exist, so ADB features will be
+# unavailable instead of crashing the whole FastAPI server.
+
+WINDOWS_ADB = Path(
+    r"D:\androisemulatsetupsmallphoner\platform-tools\adb.exe"
+)
+
+if WINDOWS_ADB.exists():
+    ADB = str(WINDOWS_ADB)
+else:
+    ADB = shutil.which("adb")
+
+
+IS_EMULATOR_AVAILABLE = ADB is not None
+
+
+# AAPT2 is only needed for APK analysis.
+WINDOWS_AAPT2 = Path(
+    r"D:\androisemulatsetupsmallphoner\build-tools\36.0.0\aapt2.exe"
+)
+
+if WINDOWS_AAPT2.exists():
+    AAPT2 = str(WINDOWS_AAPT2)
+else:
+    AAPT2 = shutil.which("aapt2")
 
 
 # ============================================================
