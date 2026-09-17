@@ -1,0 +1,1369 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Emulator Lite</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            background: #111;
+
+            color: white;
+
+            font-family: Arial, sans-serif;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+        }
+
+
+        h1 {
+
+            margin: 20px 0 5px;
+
+        }
+
+
+        #status {
+
+            margin-bottom: 15px;
+
+            color: #7cff7c;
+
+        }
+
+
+        /* =========================
+           PHONE
+        ========================= */
+
+        .phone {
+
+            width: 360px;
+
+            max-width: 90vw;
+
+            background: #000;
+
+            border: 4px solid #333;
+
+            border-radius: 25px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 0 30px rgba(0, 0, 0, 0.7);
+
+            cursor: pointer;
+
+            user-select: none;
+
+        }
+
+
+        #screen {
+
+            display: block;
+
+            width: 100%;
+
+            height: auto;
+
+            background: #000;
+
+        }
+
+
+        /* =========================
+           NAVIGATION
+        ========================= */
+
+        .controls {
+
+            margin: 15px;
+
+            display: flex;
+
+            gap: 8px;
+
+            flex-wrap: wrap;
+
+            justify-content: center;
+
+        }
+
+
+        button {
+
+            padding: 11px 16px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #292929;
+
+            color: white;
+
+            cursor: pointer;
+
+            font-size: 14px;
+
+        }
+
+
+        button:hover {
+
+            background: #444;
+
+        }
+
+
+        button:disabled {
+
+            opacity: 0.5;
+
+            cursor: not-allowed;
+
+        }
+
+
+        /* =========================
+           PANELS
+        ========================= */
+
+        .panel {
+
+            width: 360px;
+
+            max-width: 90vw;
+
+            margin: 10px 0;
+
+            padding: 15px;
+
+            background: #1b1b1b;
+
+            border: 1px solid #333;
+
+            border-radius: 15px;
+
+        }
+
+
+        .panel h2 {
+
+            margin-top: 0;
+
+            font-size: 18px;
+
+        }
+
+
+        /* =========================
+           TEXT INPUT
+        ========================= */
+
+        .text-row {
+
+            display: flex;
+
+            gap: 8px;
+
+        }
+
+
+        #textInput {
+
+            flex: 1;
+
+            min-width: 0;
+
+            padding: 11px;
+
+            border-radius: 8px;
+
+            border: 1px solid #444;
+
+            background: #111;
+
+            color: white;
+
+            outline: none;
+
+        }
+
+
+        #textInput:focus {
+
+            border-color: #777;
+
+        }
+
+
+        /* =========================
+           APK
+        ========================= */
+
+        #apkFile {
+
+            width: 100%;
+
+            margin-bottom: 10px;
+
+            color: white;
+
+        }
+
+
+        .apk-buttons {
+
+            display: flex;
+
+            gap: 8px;
+
+            flex-wrap: wrap;
+
+        }
+
+
+        #apkInfo {
+
+            margin-top: 12px;
+
+            padding: 10px;
+
+            background: #111;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+
+            display: none;
+
+        }
+
+
+        #message {
+
+            margin-top: 10px;
+
+            font-size: 13px;
+
+            color: #aaa;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <h1>📱 Emulator Lite</h1>
+
+
+    <div id="status">
+
+        🟢 Connecting...
+
+    </div>
+
+
+    <!-- =========================
+         ANDROID SCREEN
+    ========================= -->
+
+    <div
+        class="phone"
+        id="phone"
+    >
+
+        <img
+            id="screen"
+            src="/screen"
+            alt="Android Emulator Screen"
+        >
+
+    </div>
+
+
+    <!-- =========================
+         ANDROID CONTROLS
+    ========================= -->
+
+    <div class="controls">
+
+        <button onclick="sendControl('back')">
+            ◀ Back
+        </button>
+
+
+        <button onclick="sendControl('home')">
+            🏠 Home
+        </button>
+
+
+        <button onclick="sendControl('recents')">
+            ▣ Recents
+        </button>
+
+
+        <button onclick="refreshScreen()">
+            🔄 Refresh
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         TEXT INPUT
+    ========================= -->
+
+    <div class="panel">
+
+        <h2>⌨️ Android Text Input</h2>
+
+        <div class="text-row">
+
+            <input
+                id="textInput"
+                type="text"
+                placeholder="Type text for Android..."
+            >
+
+            <button onclick="sendText()">
+                Send
+            </button>
+
+        </div>
+
+        <div id="textMessage"></div>
+
+    </div>
+
+
+    <!-- =========================
+         APK OPENER
+    ========================= -->
+
+    <div class="panel">
+
+        <h2>📦 APK Opener</h2>
+
+        <input
+            id="apkFile"
+            type="file"
+            accept=".apk"
+        >
+
+
+        <div class="apk-buttons">
+
+            <button
+                id="uploadButton"
+                onclick="uploadAPK()"
+            >
+                📤 Upload APK
+            </button>
+
+
+            <button
+                id="launchButton"
+                onclick="installAndLaunch()"
+            >
+                🚀 Install & Launch
+            </button>
+
+        </div>
+
+
+        <div id="apkInfo"></div>
+
+        <div id="message"></div>
+
+    </div>
+
+
+    <script>
+
+
+        const screen =
+            document.getElementById("screen");
+
+
+        const status =
+            document.getElementById("status");
+
+
+        const textInput =
+            document.getElementById("textInput");
+
+
+        const textMessage =
+            document.getElementById("textMessage");
+
+
+        const apkFile =
+            document.getElementById("apkFile");
+
+
+        const apkInfo =
+            document.getElementById("apkInfo");
+
+
+        const message =
+            document.getElementById("message");
+
+
+        const uploadButton =
+            document.getElementById("uploadButton");
+
+
+        const launchButton =
+            document.getElementById("launchButton");
+
+
+        /*
+         * Prevent multiple screenshot
+         * requests from running together.
+         */
+        let refreshing = false;
+
+
+        /*
+         * =========================
+         * SCREEN REFRESH
+         * =========================
+         */
+
+        async function refreshScreen() {
+
+            if (refreshing) {
+
+                return;
+
+            }
+
+
+            refreshing = true;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/screen?t=" + Date.now()
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Screen request failed"
+                    );
+
+                }
+
+
+                const blob =
+                    await response.blob();
+
+
+                const imageURL =
+                    URL.createObjectURL(blob);
+
+
+                const oldURL =
+                    screen.src;
+
+
+                screen.src =
+                    imageURL;
+
+
+                /*
+                 * Release previous generated
+                 * browser object URL when possible.
+                 */
+                if (
+                    oldURL &&
+                    oldURL.startsWith("blob:")
+                ) {
+
+                    URL.revokeObjectURL(oldURL);
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Screen refresh:",
+                    error
+                );
+
+            }
+
+            finally {
+
+                refreshing = false;
+
+                /*
+                 * Wait 300ms AFTER the previous
+                 * screenshot has completed.
+                 */
+                setTimeout(
+                    refreshScreen,
+                    300
+                );
+
+            }
+
+        }
+
+
+        /*
+         * =========================
+         * STATUS
+         * =========================
+         */
+
+        async function checkStatus() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/status?t=" + Date.now()
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (data.ok) {
+
+                    status.textContent =
+                        "🟢 Emulator Connected";
+
+                }
+
+                else {
+
+                    status.textContent =
+                        "🔴 Emulator Offline";
+
+                }
+
+            }
+
+            catch (error) {
+
+                status.textContent =
+                    "🔴 Server Offline";
+
+            }
+
+        }
+
+
+        /*
+         * Check emulator every 2 seconds.
+         */
+
+        setInterval(
+            checkStatus,
+            2000
+        );
+
+
+        /*
+         * =========================
+         * NAVIGATION
+         * =========================
+         */
+
+        async function sendControl(action) {
+
+            try {
+
+                await fetch(
+                    "/control/" + action,
+                    {
+                        method: "POST"
+                    }
+                );
+
+
+                setTimeout(
+                    refreshScreen,
+                    200
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Control failed:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        /*
+         * =========================
+         * SCREEN TAP
+         * =========================
+         */
+
+        screen.addEventListener(
+            "click",
+            async function(event) {
+
+
+                const rect =
+                    screen.getBoundingClientRect();
+
+
+                /*
+                 * Use the ACTUAL Android
+                 * screenshot dimensions.
+                 *
+                 * No hardcoded 360x800.
+                 */
+
+                const realWidth =
+                    screen.naturalWidth;
+
+
+                const realHeight =
+                    screen.naturalHeight;
+
+
+                if (
+                    !realWidth ||
+                    !realHeight
+                ) {
+
+                    return;
+
+                }
+
+
+                const displayX =
+                    event.clientX - rect.left;
+
+
+                const displayY =
+                    event.clientY - rect.top;
+
+
+                const androidX =
+                    Math.round(
+                        displayX /
+                        rect.width *
+                        realWidth
+                    );
+
+
+                const androidY =
+                    Math.round(
+                        displayY /
+                        rect.height *
+                        realHeight
+                    );
+
+
+                console.log(
+                    "Android tap:",
+                    androidX,
+                    androidY
+                );
+
+
+                try {
+
+                    await fetch(
+                        "/tap",
+                        {
+
+                            method: "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json"
+
+                            },
+
+                            body:
+                                JSON.stringify({
+
+                                    x: androidX,
+
+                                    y: androidY
+
+                                })
+
+                        }
+                    );
+
+
+                    setTimeout(
+                        refreshScreen,
+                        200
+                    );
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "Tap failed:",
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+
+        /*
+         * =========================
+         * SEND TEXT
+         * =========================
+         */
+
+        async function sendText() {
+
+            const text =
+                textInput.value;
+
+
+            if (!text.trim()) {
+
+                textMessage.textContent =
+                    "⚠️ Type something first.";
+
+                return;
+
+            }
+
+
+            textMessage.textContent =
+                "Sending...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/text",
+                        {
+
+                            method: "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json"
+
+                            },
+
+                            body:
+                                JSON.stringify({
+
+                                    text: text
+
+                                })
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (response.ok) {
+
+                    textMessage.textContent =
+                        "✅ Text sent to Android.";
+
+                    textInput.value = "";
+
+
+                    setTimeout(
+                        refreshScreen,
+                        200
+                    );
+
+                }
+
+                else {
+
+                    textMessage.textContent =
+                        "❌ " +
+                        (
+                            data.error ||
+                            "Text failed"
+                        );
+
+                }
+
+            }
+
+            catch (error) {
+
+                textMessage.textContent =
+                    "❌ Could not send text.";
+
+                console.error(
+                    error
+                );
+
+            }
+
+        }
+
+
+        /*
+         * Press Enter to send text.
+         */
+
+        textInput.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (
+                    event.key === "Enter"
+                ) {
+
+                    sendText();
+
+                }
+
+            }
+        );
+
+
+        /*
+         * =========================
+         * APK UPLOAD
+         * =========================
+         */
+
+        async function uploadAPK() {
+
+            const file =
+                apkFile.files[0];
+
+
+            if (!file) {
+
+                message.textContent =
+                    "⚠️ Select an APK first.";
+
+                return;
+
+            }
+
+
+            if (
+                !file.name
+                    .toLowerCase()
+                    .endsWith(".apk")
+            ) {
+
+                message.textContent =
+                    "❌ Please select an APK file.";
+
+                return;
+
+            }
+
+
+            uploadButton.disabled =
+                true;
+
+
+            message.textContent =
+                "📤 Uploading APK...";
+
+
+            try {
+
+                const formData =
+                    new FormData();
+
+
+                formData.append(
+                    "file",
+                    file
+                );
+
+
+                const response =
+                    await fetch(
+                        "/upload-apk",
+                        {
+
+                            method: "POST",
+
+                            body: formData
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        "Upload failed"
+                    );
+
+                }
+
+
+                message.textContent =
+                    "🔍 APK uploaded. Analyzing...";
+
+
+                await analyzeAPK();
+
+
+            }
+
+            catch (error) {
+
+                message.textContent =
+                    "❌ " +
+                    error.message;
+
+            }
+
+            finally {
+
+                uploadButton.disabled =
+                    false;
+
+            }
+
+        }
+
+
+        /*
+         * =========================
+         * APK ANALYZER
+         * =========================
+         */
+
+        async function analyzeAPK() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/analyze-apk"
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        "APK analysis failed"
+                    );
+
+                }
+
+
+                apkInfo.style.display =
+                    "block";
+
+
+                apkInfo.innerHTML = `
+
+                    <b>📦 APK:</b>
+                    ${data.apk}
+                    <br>
+
+                    <b>📱 App:</b>
+                    ${data.app_name || "Unknown"}
+                    <br>
+
+                    <b>Package:</b>
+                    ${data.package}
+                    <br>
+
+                    <b>Version:</b>
+                    ${data.version}
+                    <br>
+
+                    <b>Min SDK:</b>
+                    ${data.min_sdk}
+                    <br>
+
+                    <b>Target SDK:</b>
+                    ${data.target_sdk}
+                    <br>
+
+                    <b>Emulator API:</b>
+                    ${data.emulator.android_api}
+                    <br>
+
+                    <b>Compatibility:</b>
+                    ${
+                        data.compatible
+                            ? "🟢 Compatible"
+                            : "🔴 Not compatible"
+                    }
+
+                `;
+
+
+                message.textContent =
+                    "✅ APK analysis complete.";
+
+            }
+
+            catch (error) {
+
+                message.textContent =
+                    "❌ " +
+                    error.message;
+
+            }
+
+        }
+
+
+        /*
+         * =========================
+         * INSTALL + LAUNCH
+         * =========================
+         */
+
+        async function installAndLaunch() {
+
+            const file =
+                apkFile.files[0];
+
+
+            if (!file) {
+
+                message.textContent =
+                    "⚠️ Select an APK first.";
+
+                return;
+
+            }
+
+
+            launchButton.disabled =
+                true;
+
+
+            uploadButton.disabled =
+                true;
+
+
+            try {
+
+                /*
+                 * 1. Upload
+                 */
+
+                message.textContent =
+                    "📤 Uploading APK...";
+
+
+                const formData =
+                    new FormData();
+
+
+                formData.append(
+                    "file",
+                    file
+                );
+
+
+                const uploadResponse =
+                    await fetch(
+                        "/upload-apk",
+                        {
+
+                            method: "POST",
+
+                            body: formData
+
+                        }
+                    );
+
+
+                const uploadData =
+                    await uploadResponse.json();
+
+
+                if (!uploadResponse.ok) {
+
+                    throw new Error(
+                        uploadData.error ||
+                        "Upload failed"
+                    );
+
+                }
+
+
+                /*
+                 * 2. Analyze
+                 */
+
+                message.textContent =
+                    "🔍 Analyzing APK...";
+
+
+                const analyzeResponse =
+                    await fetch(
+                        "/analyze-apk"
+                    );
+
+
+                const analyzeData =
+                    await analyzeResponse.json();
+
+
+                if (
+                    !analyzeResponse.ok
+                ) {
+
+                    throw new Error(
+                        analyzeData.error ||
+                        "APK analysis failed"
+                    );
+
+                }
+
+
+                apkInfo.style.display =
+                    "block";
+
+
+                apkInfo.innerHTML = `
+
+                    <b>📦 APK:</b>
+                    ${analyzeData.apk}
+                    <br>
+
+                    <b>📱 App:</b>
+                    ${analyzeData.app_name}
+                    <br>
+
+                    <b>Package:</b>
+                    ${analyzeData.package}
+                    <br>
+
+                    <b>Version:</b>
+                    ${analyzeData.version}
+                    <br>
+
+                    <b>Min SDK:</b>
+                    ${analyzeData.min_sdk}
+                    <br>
+
+                    <b>Target SDK:</b>
+                    ${analyzeData.target_sdk}
+                    <br>
+
+                    <b>Emulator API:</b>
+                    ${analyzeData.emulator.android_api}
+                    <br>
+
+                    <b>Compatibility:</b>
+                    ${
+                        analyzeData.compatible
+                            ? "🟢 Compatible"
+                            : "🔴 Not compatible"
+                    }
+
+                `;
+
+
+                if (
+                    !analyzeData.compatible
+                ) {
+
+                    throw new Error(
+                        "This APK is not compatible with the emulator."
+                    );
+
+                }
+
+
+                /*
+                 * 3. Install
+                 */
+
+                message.textContent =
+                    "📱 Installing APK...";
+
+
+                const installResponse =
+                    await fetch(
+                        "/install-apk",
+                        {
+
+                            method: "POST"
+
+                        }
+                    );
+
+
+                const installData =
+                    await installResponse.json();
+
+
+                if (!installResponse.ok) {
+
+                    throw new Error(
+                        installData.error ||
+                        "Installation failed"
+                    );
+
+                }
+
+
+                /*
+                 * 4. Launch
+                 */
+
+                message.textContent =
+                    "🚀 Launching APK...";
+
+
+                const launchResponse =
+                    await fetch(
+                        "/launch-apk",
+                        {
+
+                            method: "POST"
+
+                        }
+                    );
+
+
+                const launchData =
+                    await launchResponse.json();
+
+
+                if (!launchResponse.ok) {
+
+                    throw new Error(
+                        launchData.error ||
+                        "Launch failed"
+                    );
+
+                }
+
+
+                message.textContent =
+                    "🎉 APK launched successfully!";
+
+
+                /*
+                 * Give Android time to
+                 * draw the application.
+                 */
+
+                setTimeout(
+                    refreshScreen,
+                    500
+                );
+
+            }
+
+            catch (error) {
+
+                message.textContent =
+                    "❌ " +
+                    error.message;
+
+                console.error(
+                    error
+                );
+
+            }
+
+            finally {
+
+                launchButton.disabled =
+                    false;
+
+                uploadButton.disabled =
+                    false;
+
+            }
+
+        }
+
+
+        /*
+         * =========================
+         * START
+         * =========================
+         */
+
+        checkStatus();
+
+        refreshScreen();
+
+    </script>
+
+</body>
+
+</html>
